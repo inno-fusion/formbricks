@@ -11,6 +11,7 @@ interface LinkSurveyEmailProps extends TEmailTemplateLegalProps {
   readonly surveyName: string;
   readonly surveyLink: string;
   readonly logoUrl?: string;
+  readonly webappUrl?: string;
   readonly t?: TFunction;
 }
 
@@ -18,11 +19,12 @@ export function LinkSurveyEmail({
   surveyName,
   surveyLink,
   logoUrl,
+  webappUrl,
   t = mockT,
   ...legalProps
 }: LinkSurveyEmailProps): React.JSX.Element {
   return (
-    <EmailTemplate logoUrl={logoUrl} t={t} {...legalProps}>
+    <EmailTemplate logoUrl={logoUrl} webappUrl={webappUrl} t={t} {...legalProps}>
       <Container>
         <Heading>{t("emails.verification_email_hey")}</Heading>
         <Text className="text-sm">{t("emails.verification_email_thanks")}</Text>

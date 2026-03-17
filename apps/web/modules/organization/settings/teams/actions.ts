@@ -217,7 +217,8 @@ export const resendInviteAction = authenticatedActionClient.schema(ZResendInvite
         parsedInput.inviteId,
         updatedInvite.email,
         invite?.creator?.name ?? "",
-        updatedInvite.name ?? ""
+        updatedInvite.name ?? "",
+        parsedInput.organizationId
       );
 
       return updatedInvite;
@@ -355,7 +356,7 @@ export const inviteUserAction = authenticatedActionClient.schema(ZInviteUserActi
       };
 
       if (inviteId) {
-        await sendInviteMemberEmail(inviteId, parsedInput.email, ctx.user.name ?? "", parsedInput.name ?? "");
+        await sendInviteMemberEmail(inviteId, parsedInput.email, ctx.user.name ?? "", parsedInput.name ?? "", parsedInput.organizationId);
       }
 
       return inviteId;

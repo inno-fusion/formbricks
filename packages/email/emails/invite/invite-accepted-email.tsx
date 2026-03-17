@@ -9,17 +9,21 @@ import { TFunction } from "../../src/types/translations";
 interface InviteAcceptedEmailProps extends TEmailTemplateLegalProps {
   readonly inviterName: string;
   readonly inviteeName: string;
+  readonly logoUrl?: string;
+  readonly webappUrl?: string;
   readonly t?: TFunction;
 }
 
 export function InviteAcceptedEmail({
   inviterName,
   inviteeName,
+  logoUrl,
+  webappUrl,
   t = mockT,
   ...legalProps
 }: InviteAcceptedEmailProps): React.JSX.Element {
   return (
-    <EmailTemplate t={t} {...legalProps}>
+    <EmailTemplate logoUrl={logoUrl} webappUrl={webappUrl} t={t} {...legalProps}>
       <Container>
         <Heading>{t("emails.invite_accepted_email_heading", { inviterName })}</Heading>
         <Text className="text-sm">{t("emails.invite_accepted_email_text", { inviteeName })}</Text>

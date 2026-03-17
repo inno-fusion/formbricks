@@ -7,7 +7,7 @@ import { createCacheKey } from "@formbricks/cache";
 import { prisma } from "@formbricks/database";
 import { logger } from "@formbricks/logger";
 import { cache } from "@/lib/cache";
-import { E2E_TESTING } from "@/lib/constants";
+import { E2E_TESTING, ENTERPRISE_BYPASS } from "@/lib/constants";
 import { env } from "@/lib/env";
 import { hashString } from "@/lib/hash-string";
 import { getInstanceId } from "@/lib/instance";
@@ -618,6 +618,32 @@ const computeLicenseState = async (
 };
 
 export const getEnterpriseLicense = reactCache(async (): Promise<TEnterpriseLicenseResult> => {
+  if (ENTERPRISE_BYPASS) {
+    return {
+      active: true,
+      features: {
+        isMultiOrgEnabled: true,
+        projects: null,
+        twoFactorAuth: true,
+        sso: true,
+        whitelabel: true,
+        removeBranding: true,
+        contacts: true,
+        ai: true,
+        saml: true,
+        spamProtection: true,
+        auditLogs: true,
+        multiLanguageSurveys: true,
+        accessControl: true,
+        quotas: true,
+      },
+      lastChecked: new Date(),
+      isPendingDowngrade: false,
+      fallbackLevel: "live",
+      status: "active",
+    };
+  }
+
   if (
     process.env.NODE_ENV !== "test" &&
     memoryCache &&
