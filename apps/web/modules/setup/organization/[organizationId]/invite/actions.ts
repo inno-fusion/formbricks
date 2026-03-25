@@ -47,7 +47,7 @@ export const inviteOrganizationMemberAction = authenticatedActionClient
         currentUserId: ctx.user.id,
       });
 
-      await sendInviteMemberEmail(invitedUserId, parsedInput.email, ctx.user.name, "");
+      await sendInviteMemberEmail(invitedUserId, parsedInput.email, ctx.user.name, "", parsedInput.organizationId);
 
       ctx.auditLoggingCtx.inviteId = invitedUserId;
       ctx.auditLoggingCtx.newObject = {

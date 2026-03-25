@@ -2,24 +2,27 @@ import { Body, Container, Html, Img, Link, Section, Tailwind, Text } from "@reac
 import { TEmailTemplateLegalProps } from "../types/email";
 import { TFunction } from "../types/translations";
 
-const fbLogoUrl = "https://app.formbricks.com/logo-transparent.png";
-const logoLink = "https://formbricks.com?utm_source=email_header&utm_medium=email";
-
 interface EmailTemplateProps extends TEmailTemplateLegalProps {
   readonly children: React.ReactNode;
   readonly logoUrl?: string;
+  readonly webappUrl?: string;
   readonly t: TFunction;
 }
 
 export function EmailTemplate({
   children,
   logoUrl,
+  webappUrl,
   t,
   privacyUrl,
   imprintUrl,
   imprintAddress,
 }: EmailTemplateProps): React.JSX.Element {
+  const baseUrl = webappUrl || "https://app.formbricks.com";
+  const fbLogoUrl = `${baseUrl}/logo-transparent.png`;
+  const logoLink = `${baseUrl}?utm_source=email_header&utm_medium=email`;
   const isDefaultLogo = !logoUrl || logoUrl === fbLogoUrl;
+  const isWhitelabeled = !isDefaultLogo;
 
   return (
     <Html>
@@ -48,13 +51,15 @@ export function EmailTemplate({
           </Container>
 
           <Section className="mt-4 text-center text-sm">
-            <Link
-              className="m-0 text-sm font-normal text-slate-500"
-              href="https://formbricks.com/?utm_source=email_header&utm_medium=email"
-              target="_blank"
-              rel="noopener noreferrer">
-              {t("emails.email_template_text_1")}
-            </Link>
+            {!isWhitelabeled && (
+              <Link
+                className="m-0 text-sm font-normal text-slate-500"
+                href={`${baseUrl}/?utm_source=email_header&utm_medium=email`}
+                target="_blank"
+                rel="noopener noreferrer">
+                {t("emails.email_template_text_1")}
+              </Link>
+            )}
             {imprintAddress && (
               <Text className="m-0 text-sm font-normal text-slate-500 opacity-50">{imprintAddress}</Text>
             )}

@@ -9,16 +9,18 @@ import { TFunction } from "../../src/types/translations";
 
 interface ForgotPasswordEmailProps extends TEmailTemplateLegalProps {
   readonly verifyLink: string;
+  readonly webappUrl?: string;
   readonly t?: TFunction;
 }
 
 export function ForgotPasswordEmail({
   verifyLink,
+  webappUrl,
   t = mockT,
   ...legalProps
 }: ForgotPasswordEmailProps): React.JSX.Element {
   return (
-    <EmailTemplate t={t} {...legalProps}>
+    <EmailTemplate webappUrl={webappUrl} t={t} {...legalProps}>
       <Container>
         <Heading>{t("emails.forgot_password_email_heading")}</Heading>
         <Text className="text-sm">{t("emails.forgot_password_email_text")}</Text>
