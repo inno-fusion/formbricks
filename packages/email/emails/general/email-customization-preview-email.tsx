@@ -8,17 +8,19 @@ import { TFunction } from "../../src/types/translations";
 interface EmailCustomizationPreviewEmailProps extends TEmailTemplateLegalProps {
   readonly userName: string;
   readonly logoUrl?: string;
+  readonly webappUrl?: string;
   readonly t?: TFunction;
 }
 
 export function EmailCustomizationPreviewEmail({
   userName,
   logoUrl,
+  webappUrl,
   t = mockT,
   ...legalProps
 }: EmailCustomizationPreviewEmailProps): React.JSX.Element {
   return (
-    <EmailTemplate logoUrl={logoUrl} t={t} {...legalProps}>
+    <EmailTemplate logoUrl={logoUrl} webappUrl={webappUrl} t={t} {...legalProps}>
       <Container>
         <Heading>{t("emails.email_customization_preview_email_heading", { userName })}</Heading>
         <Text className="text-sm">{t("emails.email_customization_preview_email_text")}</Text>

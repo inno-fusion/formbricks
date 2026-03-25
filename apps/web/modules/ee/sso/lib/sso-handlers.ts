@@ -356,7 +356,10 @@ export const handleSsoCallback = async ({
 
     let organization: Organization | null = null;
 
-    if (!isFirstUser && !isMultiOrgEnabled) {
+    // When SKIP_INVITE_FOR_SSO is set, always resolve org assignment even if multi-org is enabled
+    const shouldAssignOrg = !isFirstUser && (!isMultiOrgEnabled || (SKIP_INVITE_FOR_SSO && DEFAULT_TEAM_ID));
+
+    if (shouldAssignOrg) {
       contextLogger.debug(
         {
           assignmentStrategy: SKIP_INVITE_FOR_SSO && DEFAULT_TEAM_ID ? "default_team" : "first_organization",
@@ -469,7 +472,7 @@ export const handleSsoCallback = async ({
       invite_organization_id: organization?.id ?? null,
     });
 
-    if (isMultiOrgEnabled) {
+    if (isMultiOrgEnabled && !organization) {
       contextLogger.debug(
         { isMultiOrgEnabled, newUserId: userProfile.id },
         "Multi-org enabled, skipping organization assignment"

@@ -139,7 +139,8 @@ async function handleInviteAcceptance(
     invite.creator.name ?? "",
     user.name,
     invite.creator.email,
-    invite.creator.locale
+    invite.creator.locale,
+    invite.organizationId
   );
   await deleteInvite(invite.id);
 }
