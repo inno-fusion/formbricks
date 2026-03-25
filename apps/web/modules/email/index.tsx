@@ -39,7 +39,7 @@ import {
 } from "@/lib/constants";
 import { getPublicDomain } from "@/lib/getPublicUrl";
 import { createEmailChangeToken, createInviteToken, createToken, createTokenForLinkSurvey } from "@/lib/jwt";
-import { getOrganizationByEnvironmentId } from "@/lib/organization/service";
+import { getOrganization, getOrganizationByEnvironmentId } from "@/lib/organization/service";
 import { getElementResponseMapping } from "@/lib/responses";
 import { getTranslate } from "@/lingodotdev/server";
 import { resolveStorageUrl } from "@/modules/storage/utils";
@@ -109,7 +109,7 @@ export const sendVerificationNewEmail = async (
     const token = createEmailChangeToken(id, email);
     const verifyLink = `${WEBAPP_URL}/verify-email-change?token=${encodeURIComponent(token)}`;
 
-    const html = await renderNewEmailVerification({ verifyLink, t, ...legalProps });
+    const html = await renderNewEmailVerification({ verifyLink, webappUrl: WEBAPP_URL, t, ...legalProps });
 
     return await sendEmail({
       to: email,
@@ -142,6 +142,7 @@ export const sendVerificationEmail = async ({
     const html = await renderVerificationEmail({
       verificationRequestLink,
       verifyLink,
+      webappUrl: WEBAPP_URL,
       t,
       ...legalProps,
     });
@@ -167,7 +168,7 @@ export const sendForgotPasswordEmail = async (user: {
     expiresIn: "1d",
   });
   const verifyLink = `${WEBAPP_URL}/auth/forgot-password/reset?token=${encodeURIComponent(token)}`;
-  const html = await renderForgotPasswordEmail({ verifyLink, t, ...legalProps });
+  const html = await renderForgotPasswordEmail({ verifyLink, webappUrl: WEBAPP_URL, t, ...legalProps });
   return await sendEmail({
     to: user.email,
     subject: t("emails.forgot_password_email_subject"),
@@ -180,7 +181,7 @@ export const sendPasswordResetNotifyEmail = async (user: {
   locale: TUserLocale;
 }): Promise<boolean> => {
   const t = await getTranslate(user.locale);
-  const html = await renderPasswordResetNotifyEmail({ t, ...legalProps });
+  const html = await renderPasswordResetNotifyEmail({ webappUrl: WEBAPP_URL, t, ...legalProps });
   return await sendEmail({
     to: user.email,
     subject: t("emails.password_reset_notify_email_subject"),
@@ -192,16 +193,32 @@ export const sendInviteMemberEmail = async (
   inviteId: string,
   email: string,
   inviterName: string,
-  inviteeName: string
+  inviteeName: string,
+  organizationId?: string
 ): Promise<boolean> => {
   const token = createInviteToken(inviteId, email, {
     expiresIn: "7d",
   });
   const t = await getTranslate();
 
+  let logoUrl: string | undefined;
+  if (organizationId) {
+    const org = await getOrganization(organizationId);
+    const orgLogoUrl = org?.whitelabel?.logoUrl;
+    logoUrl = orgLogoUrl ? resolveStorageUrl(orgLogoUrl) : undefined;
+  }
+
   const verifyLink = `${WEBAPP_URL}/invite?token=${encodeURIComponent(token)}`;
 
-  const html = await renderInviteEmail({ inviteeName, inviterName, verifyLink, t, ...legalProps });
+  const html = await renderInviteEmail({
+    inviteeName,
+    inviterName,
+    verifyLink,
+    logoUrl,
+    webappUrl: WEBAPP_URL,
+    t,
+    ...legalProps,
+  });
   return await sendEmail({
     to: email,
     subject: t("emails.invite_member_email_subject"),
@@ -213,10 +230,26 @@ export const sendInviteAcceptedEmail = async (
   inviterName: string,
   inviteeName: string,
   email: string,
-  inviterLocale?: TUserLocale
+  inviterLocale?: TUserLocale,
+  organizationId?: string
 ): Promise<void> => {
   const t = await getTranslate(inviterLocale);
-  const html = await renderInviteAcceptedEmail({ inviteeName, inviterName, t, ...legalProps });
+
+  let logoUrl: string | undefined;
+  if (organizationId) {
+    const org = await getOrganization(organizationId);
+    const orgLogoUrl = org?.whitelabel?.logoUrl;
+    logoUrl = orgLogoUrl ? resolveStorageUrl(orgLogoUrl) : undefined;
+  }
+
+  const html = await renderInviteAcceptedEmail({
+    inviteeName,
+    inviterName,
+    logoUrl,
+    webappUrl: WEBAPP_URL,
+    t,
+    ...legalProps,
+  });
   await sendEmail({
     to: email,
     subject: t("emails.invite_accepted_email_subject"),
@@ -300,6 +333,7 @@ export const sendEmbedSurveyPreviewEmail = async (
     html: innerHtml,
     environmentId,
     logoUrl: resolvedLogoUrl,
+    webappUrl: WEBAPP_URL,
     t,
     ...legalProps,
   });
@@ -322,6 +356,7 @@ export const sendEmailCustomizationPreviewEmail = async (
   const emailHtmlBody = await renderEmailCustomizationPreviewEmail({
     userName,
     logoUrl: resolvedLogoUrl,
+    webappUrl: WEBAPP_URL,
     t,
     ...legalProps,
   });
@@ -350,7 +385,14 @@ export const sendLinkSurveyToVerifiedEmail = async (data: TLinkSurveyEmailData):
   };
   const surveyLink = getSurveyLink();
 
-  const html = await renderLinkSurveyEmail({ surveyName, surveyLink, logoUrl, t, ...legalProps });
+  const html = await renderLinkSurveyEmail({
+    surveyName,
+    surveyLink,
+    logoUrl,
+    webappUrl: WEBAPP_URL,
+    t,
+    ...legalProps,
+  });
   return await sendEmail({
     to: data.email,
     subject: t("emails.verified_link_survey_email_subject"),

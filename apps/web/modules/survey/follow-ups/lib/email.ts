@@ -9,7 +9,7 @@ import {
 import { TResponse } from "@formbricks/types/responses";
 import { TSurveyElementTypeEnum } from "@formbricks/types/surveys/elements";
 import { TSurvey } from "@formbricks/types/surveys/types";
-import { IMPRINT_ADDRESS, IMPRINT_URL, PRIVACY_URL, TERMS_URL } from "@/lib/constants";
+import { IMPRINT_ADDRESS, IMPRINT_URL, PRIVACY_URL, TERMS_URL, WEBAPP_URL } from "@/lib/constants";
 import { getElementResponseMapping } from "@/lib/responses";
 import { parseRecallInfo } from "@/lib/utils/recall";
 import { getTranslate } from "@/lingodotdev/server";
@@ -121,6 +121,7 @@ export const sendFollowUpEmail = async ({
     variables,
     hiddenFields,
     logoUrl,
+    webappUrl: WEBAPP_URL,
     t,
     privacyUrl: PRIVACY_URL || undefined,
     termsUrl: TERMS_URL || undefined,
