@@ -205,7 +205,8 @@ export const resendInviteAction = authenticatedActionClient.inputSchema(ZResendI
       parsedInput.inviteId,
       updatedInvite.email,
       invite?.creator?.name ?? "",
-      updatedInvite.name ?? ""
+      updatedInvite.name ?? "",
+      parsedInput.organizationId
     );
 
     return updatedInvite;
@@ -337,10 +338,16 @@ export const inviteUserAction = authenticatedActionClient.inputSchema(ZInviteUse
     if (inviteId) {
       await recordRateLimitUsage(rateLimitConfigs.actions.inviteMember, parsedInput.organizationId);
       // Email delivery is best-effort: the invite is already persisted and can be shared via its
-      // link, so a failing/misconfigured SMTP must not fail the whole action — otherwise the created
+      // link, so a failing/misconfigured SMTP must not fail the whole action - otherwise the created
       // invite is stranded behind an "Invite already exists" error on the user's next attempt.
       try {
-        await sendInviteMemberEmail(inviteId, parsedInput.email, ctx.user.name ?? "", parsedInput.name ?? "");
+        await sendInviteMemberEmail(
+          inviteId,
+          parsedInput.email,
+          ctx.user.name ?? "",
+          parsedInput.name ?? "",
+          parsedInput.organizationId
+        );
       } catch (error) {
         logger.error(error, "Failed to send invite email");
       }
