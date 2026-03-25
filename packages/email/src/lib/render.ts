@@ -21,6 +21,7 @@ export async function renderVerificationEmail(
   props: {
     verifyLink: string;
     verificationRequestLink: string;
+    webappUrl?: string;
     t: TFunction;
   } & TEmailTemplateLegalProps
 ): Promise<string> {
@@ -31,6 +32,7 @@ export async function renderForgotPasswordEmail(
   props: {
     verifyLink: string;
     linkValidityInMinutes: number;
+    webappUrl?: string;
     t: TFunction;
   } & TEmailTemplateLegalProps
 ): Promise<string> {
@@ -50,6 +52,7 @@ export async function renderAccountDeletionEmail(
 export async function renderNewEmailVerification(
   props: {
     verifyLink: string;
+    webappUrl?: string;
     t: TFunction;
   } & TEmailTemplateLegalProps
 ): Promise<string> {
@@ -57,7 +60,7 @@ export async function renderNewEmailVerification(
 }
 
 export async function renderPasswordResetNotifyEmail(
-  props: { t: TFunction } & TEmailTemplateLegalProps
+  props: { webappUrl?: string; t: TFunction } & TEmailTemplateLegalProps
 ): Promise<string> {
   return await render(PasswordResetNotifyEmail(props));
 }
@@ -67,6 +70,8 @@ export async function renderInviteEmail(
     inviteeName: string;
     inviterName: string;
     verifyLink: string;
+    logoUrl?: string;
+    webappUrl?: string;
     t: TFunction;
   } & TEmailTemplateLegalProps
 ): Promise<string> {
@@ -77,6 +82,8 @@ export async function renderInviteAcceptedEmail(
   props: {
     inviterName: string;
     inviteeName: string;
+    logoUrl?: string;
+    webappUrl?: string;
     t: TFunction;
   } & TEmailTemplateLegalProps
 ): Promise<string> {
@@ -88,6 +95,7 @@ export async function renderLinkSurveyEmail(
     surveyName: string;
     surveyLink: string;
     logoUrl: string;
+    webappUrl?: string;
     t: TFunction;
   } & TEmailTemplateLegalProps
 ): Promise<string> {
@@ -99,6 +107,7 @@ export async function renderEmbedSurveyPreviewEmail(
     html: string;
     workspaceId: string;
     logoUrl?: string;
+    webappUrl?: string;
     t: TFunction;
   } & TEmailTemplateLegalProps
 ): Promise<string> {
@@ -115,6 +124,7 @@ export async function renderEmailCustomizationPreviewEmail(
   props: {
     userName: string;
     logoUrl?: string;
+    webappUrl?: string;
     t: TFunction;
   } & TEmailTemplateLegalProps
 ): Promise<string> {

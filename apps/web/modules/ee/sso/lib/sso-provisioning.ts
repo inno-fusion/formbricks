@@ -99,9 +99,26 @@ export const gateSsoProvisioning = async ({
   const isMultiOrgEnabled = await getIsMultiOrgEnabled();
   const isFirstUser = await getIsFreshInstance();
 
-  // Fresh instance or multi-org: create the user with no org auto-assignment (handled by onboarding
-  // / explicit invites elsewhere).
-  if (isFirstUser || isMultiOrgEnabled) {
+  // Fresh instance: create the user with no org auto-assignment (handled by onboarding).
+  if (isFirstUser) {
+    return { action: "provision", organizationId: null, assignToDefaultTeam: false, signupSource };
+  }
+
+  // Preserve fork intent: when SSO invite-skipping is configured, always assign new SSO users
+  // through the default team, even on multi-org instances.
+  if (SKIP_INVITE_FOR_SSO && DEFAULT_TEAM_ID) {
+    const organization = await getOrganizationByTeamId(DEFAULT_TEAM_ID);
+    if (!organization) return { action: "reject", reason: "no_organization_found" };
+    return {
+      action: "provision",
+      organizationId: organization.id,
+      assignToDefaultTeam: true,
+      signupSource,
+    };
+  }
+
+  // Multi-org without explicit default-team SSO assignment: no org auto-assignment.
+  if (isMultiOrgEnabled) {
     return { action: "provision", organizationId: null, assignToDefaultTeam: false, signupSource };
   }
 

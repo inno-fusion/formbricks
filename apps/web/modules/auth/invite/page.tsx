@@ -105,7 +105,8 @@ export const InvitePage = async (props: InvitePageProps) => {
         invite.creator.name ?? "",
         user?.name ?? "",
         invite.creator.email,
-        invite.creator.locale
+        invite.creator.locale,
+        invite.organizationId
       );
       await updateUser(session.user.id, {
         notificationSettings: {

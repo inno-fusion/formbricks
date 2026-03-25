@@ -7,15 +7,17 @@ import { TEmailTemplateLegalProps } from "../../src/types/email";
 import { TFunction } from "../../src/types/translations";
 
 interface PasswordResetNotifyEmailProps extends TEmailTemplateLegalProps {
+  readonly webappUrl?: string;
   readonly t?: TFunction;
 }
 
 export function PasswordResetNotifyEmail({
+  webappUrl,
   t = mockT,
   ...legalProps
 }: PasswordResetNotifyEmailProps = {}): React.JSX.Element {
   return (
-    <EmailTemplate t={t} {...legalProps}>
+    <EmailTemplate webappUrl={webappUrl} t={t} {...legalProps}>
       <Container>
         <Heading>{t("emails.password_changed_email_heading")}</Heading>
         <Text className="text-sm">{t("emails.password_changed_email_text")}</Text>
