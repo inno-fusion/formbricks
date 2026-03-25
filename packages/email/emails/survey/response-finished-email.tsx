@@ -46,8 +46,9 @@ export function ResponseFinishedEmail({
   t = mockT,
   ...legalProps
 }: ResponseFinishedEmailProps): React.JSX.Element {
+  const logoUrl = (organization.whitelabel as { logoUrl?: string })?.logoUrl || undefined;
   return (
-    <EmailTemplate t={t} {...legalProps}>
+    <EmailTemplate logoUrl={logoUrl} webappUrl={WEBAPP_URL} t={t} {...legalProps}>
       <Container>
         <Row>
           <Column>
