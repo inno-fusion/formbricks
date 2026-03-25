@@ -10,7 +10,7 @@ import { TSurveyElementTypeEnum } from "@formbricks/types/surveys/elements";
 import { TSurveyFollowUp } from "@formbricks/types/surveys/follow-up";
 import { TSurvey } from "@formbricks/types/surveys/types";
 import { TUserLocale } from "@formbricks/types/user";
-import { DEFAULT_LOCALE, IMPRINT_ADDRESS, IMPRINT_URL, PRIVACY_URL, TERMS_URL } from "@/lib/constants";
+import { DEFAULT_LOCALE, IMPRINT_ADDRESS, IMPRINT_URL, PRIVACY_URL, TERMS_URL, WEBAPP_URL } from "@/lib/constants";
 import { getElementResponseMapping } from "@/lib/responses";
 import { parseRecallInfo } from "@/lib/utils/recall";
 import { getTranslate } from "@/lingodotdev/server";
@@ -126,6 +126,7 @@ export const sendFollowUpEmail = async ({
     variables,
     hiddenFields,
     logoUrl,
+    webappUrl: WEBAPP_URL,
     t,
     privacyUrl: PRIVACY_URL || undefined,
     termsUrl: TERMS_URL || undefined,
