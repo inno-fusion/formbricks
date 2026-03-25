@@ -9,16 +9,18 @@ import { TFunction } from "../../src/types/translations";
 
 interface NewEmailVerificationProps extends TEmailTemplateLegalProps {
   readonly verifyLink: string;
+  readonly webappUrl?: string;
   readonly t?: TFunction;
 }
 
 export function NewEmailVerification({
   verifyLink,
+  webappUrl,
   t = mockT,
   ...legalProps
 }: NewEmailVerificationProps): React.JSX.Element {
   return (
-    <EmailTemplate t={t} {...legalProps}>
+    <EmailTemplate webappUrl={webappUrl} t={t} {...legalProps}>
       <Container>
         <Heading>{t("emails.verification_email_heading")}</Heading>
         <Text className="text-sm">{t("emails.new_email_verification_text")}</Text>

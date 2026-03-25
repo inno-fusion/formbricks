@@ -11,6 +11,8 @@ interface InviteEmailProps extends TEmailTemplateLegalProps {
   readonly inviteeName: string;
   readonly inviterName: string;
   readonly verifyLink: string;
+  readonly logoUrl?: string;
+  readonly webappUrl?: string;
   readonly t?: TFunction;
 }
 
@@ -18,11 +20,13 @@ export function InviteEmail({
   inviteeName,
   inviterName,
   verifyLink,
+  logoUrl,
+  webappUrl,
   t = mockT,
   ...legalProps
 }: InviteEmailProps): React.JSX.Element {
   return (
-    <EmailTemplate t={t} {...legalProps}>
+    <EmailTemplate logoUrl={logoUrl} webappUrl={webappUrl} t={t} {...legalProps}>
       <Container>
         <Heading>{t("emails.invite_email_heading", { inviteeName })}</Heading>
         <Text className="text-sm">{t("emails.invite_email_text", { inviterName })}</Text>
