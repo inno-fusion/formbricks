@@ -38,11 +38,14 @@ const getSurveyState: () => SurveyState = () => ({
   contactId: "contact1",
   surveyId: "survey1",
   singleUseId: "single1",
+  shouldCreateResponseFromState: false,
   responseAcc: { finished: false, data: {}, ttc: {}, variables: {} },
   updateResponseId: vi.fn(),
   updateDisplayId: vi.fn(),
   updateUserId: vi.fn(),
   updateContactId: vi.fn(),
+  enableBootstrapResponseCreate: vi.fn(),
+  disableBootstrapResponseCreate: vi.fn(),
   accumulateResponse: vi.fn(),
   isResponseFinished: vi.fn(),
   clear: vi.fn(),
@@ -191,6 +194,7 @@ describe("ResponseQueue", () => {
     const result = await queue.sendResponse(responseUpdate);
     expect(apiMock.createResponse).toHaveBeenCalled();
     expect(surveyState.updateResponseId).toHaveBeenCalledWith("newid");
+    expect(surveyState.disableBootstrapResponseCreate).toHaveBeenCalled();
     expect(config.setSurveyState).toHaveBeenCalledWith(surveyState);
     expect(result.ok).toBe(true);
   });

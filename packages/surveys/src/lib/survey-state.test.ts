@@ -14,6 +14,7 @@ describe("SurveyState", () => {
     expect(surveyState.surveyId).toBe(initialSurveyId);
     expect(surveyState.responseId).toBeNull();
     expect(surveyState.displayId).toBeNull();
+    expect(surveyState.shouldCreateResponseFromState).toBe(false);
     expect(surveyState.userId).toBeNull();
     expect(surveyState.contactId).toBeNull();
     expect(surveyState.singleUseId).toBeNull();
@@ -137,7 +138,7 @@ describe("SurveyState", () => {
 
       expect(surveyState.responseAcc.finished).toBe(true);
       expect(surveyState.responseAcc.data).toEqual({ q1: "newAns1", q2: "ans2" });
-      expect(surveyState.responseAcc.ttc).toEqual({ q2: 200 }); // ttc is overwritten
+      expect(surveyState.responseAcc.ttc).toEqual({ q1: 100, q2: 200 });
       expect(surveyState.responseAcc.variables).toEqual({ varB: "valB" }); // variables are overwritten
       expect(surveyState.responseAcc.displayId).toBe("display123");
     });
@@ -158,9 +159,11 @@ describe("SurveyState", () => {
   describe("clear", () => {
     test("should reset responseId and responseAcc", () => {
       surveyState.responseId = "someId";
+      surveyState.enableBootstrapResponseCreate();
       surveyState.responseAcc = { finished: true, data: { q: "a" }, ttc: { q: 1 }, variables: { v: "1" } };
       surveyState.clear();
       expect(surveyState.responseId).toBeNull();
+      expect(surveyState.shouldCreateResponseFromState).toBe(false);
       expect(surveyState.responseAcc).toEqual({ finished: false, data: {}, ttc: {}, variables: {} });
     });
   });
