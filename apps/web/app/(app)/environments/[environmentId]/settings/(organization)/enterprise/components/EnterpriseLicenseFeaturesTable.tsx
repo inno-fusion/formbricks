@@ -8,7 +8,7 @@ import type { TEnterpriseLicenseFeatures } from "@/modules/ee/license-check/type
 import { Badge } from "@/modules/ui/components/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/modules/ui/components/table";
 
-type TPublicLicenseFeatureKey = Exclude<keyof TEnterpriseLicenseFeatures, "isMultiOrgEnabled" | "ai">;
+type TPublicLicenseFeatureKey = Exclude<keyof TEnterpriseLicenseFeatures, "isMultiOrgEnabled" | "aiSmartTools" | "aiDataAnalysis">;
 
 type TFeatureDefinition = {
   key: TPublicLicenseFeatureKey;
