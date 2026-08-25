@@ -639,6 +639,7 @@ export const getEnterpriseLicense = reactCache(async (): Promise<TEnterpriseLice
         quotas: true,
         feedbackDirectories: true,
         dashboards: true,
+        workflows: true,
       },
       lastChecked: new Date(),
       isPendingDowngrade: false,
