@@ -10,7 +10,7 @@ import {
 // Hoisted so the memory-cache test below can flip NODE_ENV on the very object the module under
 // test reads. getEnterpriseLicense skips its in-memory cache while NODE_ENV is "test", so license
 // state cannot bleed between tests here; dropping that key re-enables the cache silently.
-const { envMock } = vi.hoisted(() => ({
+const { envMock, constantsMock } = vi.hoisted(() => ({
   envMock: {
     ENTERPRISE_LICENSE_KEY: "test-license-key",
     ENVIRONMENT: "production",
@@ -20,6 +20,7 @@ const { envMock } = vi.hoisted(() => ({
     HTTP_PROXY: undefined,
     NODE_ENV: "test",
   },
+  constantsMock: { enterpriseBypass: false },
 }));
 
 // Mock declarations must be at the top level
@@ -92,7 +93,9 @@ vi.mock("@/lib/constants", async (importOriginal) => {
     // network calls are made: global.fetch and getInstanceId() are both mocked
     // at the top of this file, so the license server is never actually reached.
     E2E_TESTING: false,
-    ENTERPRISE_BYPASS: false,
+    get ENTERPRISE_BYPASS() {
+      return constantsMock.enterpriseBypass;
+    },
     REVALIDATION_INTERVAL: 3600, // Example value
     ENTERPRISE_LICENSE_KEY: "test-license-key",
   };
@@ -103,6 +106,7 @@ describe("License Core Logic", () => {
 
   beforeEach(() => {
     originalProcessEnv = { ...process.env };
+    constantsMock.enterpriseBypass = false;
     vi.resetAllMocks();
     mockCache.get.mockReset();
     mockCache.set.mockReset();
@@ -146,8 +150,7 @@ describe("License Core Logic", () => {
   describe("getEnterpriseLicense", () => {
     test("returns every current enterprise feature without contacting license infrastructure when bypassed", async () => {
       vi.resetModules();
-      const constants = await import("@/lib/constants");
-      vi.mocked(constants).ENTERPRISE_BYPASS = true;
+      constantsMock.enterpriseBypass = true;
 
       const { getEnterpriseLicense } = await import("./license");
       const license = await getEnterpriseLicense();
