@@ -152,6 +152,33 @@ describe("translation threading", () => {
   });
 });
 
+describe("custom branding", () => {
+  test("uses the deployment URL for default branding instead of upstream Formbricks URLs", async () => {
+    const webappUrl = "https://forms.example.test";
+    const html = await renderVerificationEmail({
+      ...exampleData.verificationEmail,
+      webappUrl,
+      t,
+    });
+
+    expect(html).toContain(`${webappUrl}/logo-transparent.png`);
+    expect(html).toContain(`${webappUrl}/?utm_source=email_header&amp;utm_medium=email`);
+    expect(html).not.toContain("https://formbricks.com");
+  });
+
+  test("hides the powered-by footer when a custom logo is supplied", async () => {
+    const html = await renderInviteEmail({
+      ...exampleData.inviteEmail,
+      logoUrl: "https://cdn.example.test/acme-logo.png",
+      webappUrl: "https://forms.example.test",
+      t,
+    });
+
+    expect(html).toContain("https://cdn.example.test/acme-logo.png");
+    expect(html).not.toContain("Powered by Formbricks");
+  });
+});
+
 describe("legal footer", () => {
   test("renders imprint and privacy links only when the legal props are supplied", async () => {
     const withLegal = await renderVerificationEmail({

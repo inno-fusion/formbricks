@@ -92,6 +92,7 @@ vi.mock("@/lib/constants", async (importOriginal) => {
     // network calls are made: global.fetch and getInstanceId() are both mocked
     // at the top of this file, so the license server is never actually reached.
     E2E_TESTING: false,
+    ENTERPRISE_BYPASS: false,
     REVALIDATION_INTERVAL: 3600, // Example value
     ENTERPRISE_LICENSE_KEY: "test-license-key",
   };
@@ -143,6 +144,44 @@ describe("License Core Logic", () => {
   });
 
   describe("getEnterpriseLicense", () => {
+    test("returns every current enterprise feature without contacting license infrastructure when bypassed", async () => {
+      vi.resetModules();
+      const constants = await import("@/lib/constants");
+      vi.mocked(constants).ENTERPRISE_BYPASS = true;
+
+      const { getEnterpriseLicense } = await import("./license");
+      const license = await getEnterpriseLicense();
+
+      expect(license).toEqual({
+        active: true,
+        features: {
+          isMultiOrgEnabled: true,
+          contacts: true,
+          workspaces: null,
+          whitelabel: true,
+          removeBranding: true,
+          twoFactorAuth: true,
+          sso: true,
+          saml: true,
+          spamProtection: true,
+          aiSmartTools: true,
+          auditLogs: true,
+          accessControl: true,
+          quotas: true,
+          feedbackDirectories: true,
+          dashboards: true,
+          workflows: true,
+        },
+        lastChecked: expect.any(Date),
+        isPendingDowngrade: false,
+        fallbackLevel: "live",
+        status: "active",
+      });
+      expect(globalThis.fetch).not.toHaveBeenCalled();
+      expect(mockCache.get).not.toHaveBeenCalled();
+      expect(mockCache.tryLock).not.toHaveBeenCalled();
+    });
+
     const mockFetchedLicenseDetailsFeatures: TEnterpriseLicenseFeatures = {
       isMultiOrgEnabled: true,
       contacts: true,
