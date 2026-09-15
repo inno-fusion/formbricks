@@ -109,6 +109,10 @@ export const gateSsoProvisioning = async ({
   if (SKIP_INVITE_FOR_SSO && DEFAULT_TEAM_ID) {
     const organization = await getOrganizationByTeamId(DEFAULT_TEAM_ID);
     if (!organization) return { action: "reject", reason: "no_organization_found" };
+    const isAccessControlAllowed = await getAccessControlPermission(organization.id);
+    if (!isAccessControlAllowed && !callbackUrl) {
+      return { action: "reject", reason: "insufficient_role_permissions" };
+    }
     return {
       action: "provision",
       organizationId: organization.id,
