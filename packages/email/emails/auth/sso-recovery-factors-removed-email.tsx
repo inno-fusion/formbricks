@@ -14,6 +14,7 @@ interface SsoRecoveryFactorsRemovedEmailProps extends TEmailTemplateLegalProps {
   readonly twoFactorRemoved: boolean;
   /** Where to re-enrol: the account security settings. */
   readonly securitySettingsLink: string;
+  readonly webappUrl?: string;
   readonly t?: TFunction;
 }
 
@@ -31,11 +32,12 @@ export function SsoRecoveryFactorsRemovedEmail({
   passwordRemoved,
   twoFactorRemoved,
   securitySettingsLink,
+  webappUrl,
   t = mockT,
   ...legalProps
 }: Readonly<SsoRecoveryFactorsRemovedEmailProps>): React.JSX.Element {
   return (
-    <EmailTemplate t={t} {...legalProps}>
+    <EmailTemplate webappUrl={webappUrl} t={t} {...legalProps}>
       <Container>
         <Heading>{t("emails.sso_recovery_factors_removed_email_heading")}</Heading>
         <Text className="text-sm">{t("emails.sso_recovery_factors_removed_email_text")}</Text>

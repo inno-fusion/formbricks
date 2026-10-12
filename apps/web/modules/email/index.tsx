@@ -295,6 +295,7 @@ export const sendSsoRecoveryFactorsRemovedEmail = async ({
     // The account profile page is where both factors this mail can name are re-enrolled — the password
     // form and the 2FA card both live there. There is no separate /settings/security route.
     securitySettingsLink: `${WEBAPP_URL}/account/settings/profile`,
+    webappUrl: WEBAPP_URL,
     t,
     ...legalProps,
   });

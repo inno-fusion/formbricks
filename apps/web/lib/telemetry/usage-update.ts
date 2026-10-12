@@ -2,7 +2,7 @@ import { type CacheService, createCacheKey, getCacheService } from "@formbricks/
 import { prisma } from "@formbricks/database";
 import { IntegrationType } from "@formbricks/database/prisma";
 import { logger } from "@formbricks/logger";
-import { E2E_TESTING, IS_DEVELOPMENT, TELEMETRY_DISABLED } from "@/lib/constants";
+import { E2E_TESTING, ENTERPRISE_BYPASS, IS_DEVELOPMENT, TELEMETRY_DISABLED } from "@/lib/constants";
 import { env } from "@/lib/env";
 import { hashString } from "@/lib/hash-string";
 import { getInstanceInfo } from "@/lib/instance";
@@ -98,6 +98,8 @@ const executeTelemetrySend = async (cache: CacheService, lastSent: number, now: 
 };
 
 export const sendTelemetryEvents = async () => {
+  if (ENTERPRISE_BYPASS) return;
+
   try {
     // ============================================================
     // CHECK 0: Non-Production Hard Skip

@@ -339,6 +339,7 @@ RUN chown nextjs:nextjs /home/nextjs/start.sh && chmod +x /home/nextjs/start.sh
 
 EXPOSE 3000
 ENV HOSTNAME="0.0.0.0"
+ENV ENTERPRISE_BYPASS="1" TELEMETRY_DISABLED="1" NEXT_TELEMETRY_DISABLED="1"
 USER nextjs
 
 # Prepare volumes for uploads and SAML connections

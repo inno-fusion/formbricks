@@ -71,6 +71,7 @@ export async function renderSsoRecoveryFactorsRemovedEmail(
     passwordRemoved: boolean;
     twoFactorRemoved: boolean;
     securitySettingsLink: string;
+    webappUrl?: string;
     t: TFunction;
   } & TEmailTemplateLegalProps
 ): Promise<string> {

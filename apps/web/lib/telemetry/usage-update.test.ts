@@ -58,6 +58,7 @@ vi.mock("@/lib/constants", () => ({
   E2E_TESTING: false,
   IS_DEVELOPMENT: false,
   TELEMETRY_DISABLED: false,
+  ENTERPRISE_BYPASS: false,
 }));
 vi.mock("@/lib/hash-string", () => ({
   hashString: vi.fn((s: string) => `hashed-${s}`),
@@ -134,6 +135,27 @@ describe("sendTelemetryEvents", () => {
     vi.useRealTimers();
   });
 
+  test("does not report usage or access cache/database when enterprise bypass is active", async () => {
+    vi.resetModules();
+    vi.doMock("@/lib/constants", () => ({
+      E2E_TESTING: false,
+      IS_DEVELOPMENT: false,
+      TELEMETRY_DISABLED: false,
+      ENTERPRISE_BYPASS: true,
+    }));
+    const { sendTelemetryEvents: bypassedSend } = await import("./usage-update");
+    await bypassedSend();
+    expect(fetchMock).not.toHaveBeenCalled();
+    expect(getCacheService).not.toHaveBeenCalled();
+    expect(prisma.$queryRaw).not.toHaveBeenCalled();
+    vi.doMock("@/lib/constants", () => ({
+      E2E_TESTING: false,
+      IS_DEVELOPMENT: false,
+      TELEMETRY_DISABLED: false,
+      ENTERPRISE_BYPASS: false,
+    }));
+  });
+
   test("should send telemetry successfully when conditions are met", async () => {
     await sendTelemetryEvents();
 
@@ -200,6 +222,7 @@ describe("sendTelemetryEvents", () => {
       E2E_TESTING: false,
       IS_DEVELOPMENT: false,
       TELEMETRY_DISABLED: false,
+      ENTERPRISE_BYPASS: false,
     }));
     vi.doMock("@/modules/ee/license-check/lib/license", () => ({
       getEnterpriseLicense: vi.fn().mockResolvedValue({ active: false }),
@@ -311,6 +334,7 @@ describe("sendTelemetryEvents", () => {
       E2E_TESTING: false,
       IS_DEVELOPMENT: false,
       TELEMETRY_DISABLED: false,
+      ENTERPRISE_BYPASS: false,
     }));
     vi.doMock("@/modules/ee/license-check/lib/license", () => ({
       getEnterpriseLicense: vi.fn().mockResolvedValue({ active: false }),
@@ -363,6 +387,7 @@ describe("sendTelemetryEvents", () => {
       E2E_TESTING: false,
       IS_DEVELOPMENT: false,
       TELEMETRY_DISABLED: false,
+      ENTERPRISE_BYPASS: false,
     }));
     vi.doMock("@/modules/ee/license-check/lib/license", () => ({
       getEnterpriseLicense: vi.fn().mockResolvedValue({ active: false }),
@@ -448,6 +473,7 @@ describe("sendTelemetryEvents", () => {
       E2E_TESTING: false,
       IS_DEVELOPMENT: false,
       TELEMETRY_DISABLED: false,
+      ENTERPRISE_BYPASS: false,
     }));
     vi.doMock("@/modules/ee/license-check/lib/license", () => ({
       getEnterpriseLicense: vi.fn().mockResolvedValue({ active: false }),
@@ -474,6 +500,7 @@ describe("sendTelemetryEvents", () => {
       E2E_TESTING: false,
       IS_DEVELOPMENT: false,
       TELEMETRY_DISABLED: true,
+      ENTERPRISE_BYPASS: false,
     }));
     vi.doMock("@/modules/ee/license-check/lib/license", () => ({
       getEnterpriseLicense: vi.fn().mockResolvedValue({ active: false }),
@@ -493,6 +520,7 @@ describe("sendTelemetryEvents", () => {
       E2E_TESTING: false,
       IS_DEVELOPMENT: false,
       TELEMETRY_DISABLED: true,
+      ENTERPRISE_BYPASS: false,
     }));
     vi.doMock("@/modules/ee/license-check/lib/license", () => ({
       getEnterpriseLicense: vi.fn().mockResolvedValue({ active: true }),
@@ -550,6 +578,7 @@ describe("sendTelemetryEvents", () => {
       E2E_TESTING: true,
       IS_DEVELOPMENT: false,
       TELEMETRY_DISABLED: false,
+      ENTERPRISE_BYPASS: false,
     }));
     vi.doMock("@/modules/ee/license-check/lib/license", () => ({
       getEnterpriseLicense: vi.fn().mockResolvedValue({ active: true }),
@@ -569,6 +598,7 @@ describe("sendTelemetryEvents", () => {
       E2E_TESTING: false,
       IS_DEVELOPMENT: true,
       TELEMETRY_DISABLED: false,
+      ENTERPRISE_BYPASS: false,
     }));
     vi.doMock("@/modules/ee/license-check/lib/license", () => ({
       getEnterpriseLicense: vi.fn().mockResolvedValue({ active: true }),

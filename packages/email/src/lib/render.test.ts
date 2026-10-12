@@ -163,6 +163,18 @@ describe("translation threading", () => {
 });
 
 describe("custom branding", () => {
+  test("uses deployment branding for the new SSO recovery notification", async () => {
+    const webappUrl = "https://forms.example.test";
+    const html = await renderSsoRecoveryFactorsRemovedEmail({
+      ...exampleData.ssoRecoveryFactorsRemovedEmail,
+      webappUrl,
+      t,
+    });
+
+    expect(html).toContain(`${webappUrl}/logo-transparent.png`);
+    expect(html).not.toContain("https://formbricks.com");
+  });
+
   test("uses the deployment URL for default branding instead of upstream Formbricks URLs", async () => {
     const webappUrl = "https://forms.example.test";
     const html = await renderVerificationEmail({

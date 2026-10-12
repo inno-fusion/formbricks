@@ -107,6 +107,26 @@ describe("gateSsoProvisioning — bypass branches", () => {
     });
   });
 
+  test("assigns the configured default team even when multi-org is enabled", async () => {
+    constantsOverrides.SKIP_INVITE_FOR_SSO = true;
+    vi.mocked(getIsMultiOrgEnabled).mockResolvedValue(true);
+    expect(await gateSsoProvisioning({ email: "a@b.com", callbackUrl: "" })).toMatchObject({
+      action: "provision",
+      organizationId: "org-1",
+      assignToDefaultTeam: true,
+    });
+  });
+
+  test("retains default-team access-control rejection on multi-org instances", async () => {
+    constantsOverrides.SKIP_INVITE_FOR_SSO = true;
+    vi.mocked(getIsMultiOrgEnabled).mockResolvedValue(true);
+    vi.mocked(getAccessControlPermission).mockResolvedValue(false);
+    expect(await gateSsoProvisioning({ email: "a@b.com", callbackUrl: "" })).toEqual({
+      action: "reject",
+      reason: "insufficient_role_permissions",
+    });
+  });
+
   test("multi-org bypasses all gates and assigns no org", async () => {
     vi.mocked(getIsMultiOrgEnabled).mockResolvedValue(true);
     expect(await gateSsoProvisioning({ email: "a@b.com", callbackUrl: "" })).toEqual({
