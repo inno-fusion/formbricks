@@ -245,6 +245,7 @@ export const sendVerificationLinkEmail = async (data: {
     // refinement tracked in the ENG-1054 runbook, not a blocker for this flow.
     verificationRequestLink: data.verifyLink,
     verifyLink: data.verifyLink,
+    webappUrl: WEBAPP_URL,
     t,
     ...legalProps,
   });

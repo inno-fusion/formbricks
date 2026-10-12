@@ -24,6 +24,7 @@ vi.mock("@/lib/env", async () => {
 // SAML literals (SAML_TENANT/SAML_PRODUCT) keep their real values — they are not env-derived toggles and
 // can't be overridden through the mock anyway — and override only the env-driven flags/credentials.
 interface MockConstants {
+  ENTERPRISE_BYPASS: boolean;
   ENTERPRISE_LICENSE_KEY?: string;
   GITHUB_OAUTH_ENABLED: boolean;
   GITHUB_ID?: string;
@@ -47,6 +48,7 @@ interface MockConstants {
 // runner's .env): everything off, no license, a known WEBAPP_URL. Spread OVER the real constants per
 // test so non-overridden values (e.g. the hardcoded SAML_TENANT/SAML_PRODUCT) keep their real values.
 const BASE: MockConstants = {
+  ENTERPRISE_BYPASS: false,
   ENTERPRISE_LICENSE_KEY: undefined,
   GITHUB_OAUTH_ENABLED: false,
   GITHUB_ID: undefined,
@@ -116,6 +118,89 @@ describe("better-auth SSO providers", () => {
       const m = await loadProviders({ ENTERPRISE_LICENSE_KEY: "lic" });
       expect(m.ssoSocialProviders).toEqual({});
       expect(m.ssoGenericOAuthConfig).toEqual([]);
+    });
+
+    test.each([false, true])("keyless provider registration with bypass=%s", async (bypass) => {
+      const m = await loadProviders({
+        ENTERPRISE_BYPASS: bypass,
+        GITHUB_OAUTH_ENABLED: true,
+        GITHUB_ID: "gh-id",
+        GITHUB_SECRET: "gh-secret",
+        GOOGLE_OAUTH_ENABLED: true,
+        GOOGLE_CLIENT_ID: "g-id",
+        GOOGLE_CLIENT_SECRET: "g-secret",
+        AZURE_OAUTH_ENABLED: true,
+        AZUREAD_CLIENT_ID: "az-id",
+        AZUREAD_CLIENT_SECRET: "az-secret",
+        AZUREAD_TENANT_ID: "tenant-123",
+        OIDC_OAUTH_ENABLED: true,
+        OIDC_CLIENT_ID: "oidc-id",
+        OIDC_CLIENT_SECRET: "oidc-secret",
+        OIDC_ISSUER: "https://idp.example.com",
+        SAML_OAUTH_ENABLED: true,
+      });
+
+      if (!bypass) {
+        expect(m.ssoSocialProviders).toEqual({});
+        expect(m.ssoGenericOAuthConfig).toEqual([]);
+        return;
+      }
+
+      expect(m.ssoSocialProviders).toMatchObject({
+        github: { clientId: "gh-id", clientSecret: "gh-secret", overrideUserInfoOnSignIn: true },
+        google: { clientId: "g-id", clientSecret: "g-secret", overrideUserInfoOnSignIn: true },
+      });
+      expect(m.ssoGenericOAuthConfig.map((provider) => provider.providerId)).toEqual([
+        "azuread",
+        "openid",
+        "saml",
+      ]);
+      expect(m.ssoGenericOAuthConfig[0]).toMatchObject({ clientId: "az-id", clientSecret: "az-secret" });
+      expect(m.ssoGenericOAuthConfig[1]).toMatchObject({ clientId: "oidc-id", clientSecret: "oidc-secret" });
+      for (const provider of m.ssoGenericOAuthConfig) {
+        expect(provider).toMatchObject({
+          pkce: true,
+          accountIssuer: `local:oauth:${provider.providerId}`,
+          redirectURI: `https://app.formbricks.test/api/auth/oauth2/callback/${provider.providerId}`,
+          overrideUserInfo: true,
+        });
+      }
+    });
+
+    test("bypass does not enable providers whose credential flags are disabled", async () => {
+      const m = await loadProviders({ ENTERPRISE_BYPASS: true });
+      expect(m.ssoSocialProviders).toEqual({});
+      expect(m.ssoGenericOAuthConfig).toEqual([]);
+    });
+
+    test("keyless bypass preserves unverified-email claims and missing account subjects", async () => {
+      const m = await loadProviders({ ENTERPRISE_BYPASS: true, OIDC_OAUTH_ENABLED: true });
+      const provider = m.ssoGenericOAuthConfig[0];
+      if (!provider?.mapProfileToUser || !provider.accountSubject) throw new Error("openid not registered");
+
+      expect(
+        await provider.mapProfileToUser({
+          email: "user@example.com",
+          email_verified: false,
+          emailVerified: false,
+        })
+      ).toEqual({ email: "user@example.com", name: undefined, emailVerified: false });
+      expect(provider.accountSubject({ profile: { emailVerified: false }, tokens: {} })).toBe("");
+      expect(captureSsoIdentity).toHaveBeenCalledWith({
+        email: "user@example.com",
+        providerAccountId: undefined,
+      });
+    });
+
+    test("keyless bypass keeps the Microsoft template-issuer warnings", async () => {
+      await loadProviders({
+        ENTERPRISE_BYPASS: true,
+        AZURE_OAUTH_ENABLED: true,
+        AZUREAD_TENANT_ID: "organizations",
+        OIDC_OAUTH_ENABLED: true,
+        OIDC_ISSUER: "https://login.microsoftonline.com/common/v2.0",
+      });
+      expect(loggerWarn).toHaveBeenCalledTimes(2);
     });
   });
 

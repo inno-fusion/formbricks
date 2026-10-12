@@ -7,6 +7,7 @@ import {
   AZUREAD_CLIENT_SECRET,
   AZUREAD_TENANT_ID,
   AZURE_OAUTH_ENABLED,
+  ENTERPRISE_BYPASS,
   ENTERPRISE_LICENSE_KEY,
   GITHUB_ID,
   GITHUB_OAUTH_ENABLED,
@@ -59,10 +60,11 @@ type GoogleProfile = Parameters<NonNullable<SocialConfig<"google">["mapProfileTo
  * down to the display name; the two are a pair, and neither works alone.
  */
 const ssoSyncProfileOnSignIn = true;
+const ssoEnabled = Boolean(ENTERPRISE_LICENSE_KEY || ENTERPRISE_BYPASS);
 
 /**
  * Better Auth SSO providers (ENG-1054), mirroring the NextAuth set in `./providers.ts`. Gated behind
- * `ENTERPRISE_LICENSE_KEY` (parity with the `getSSOProviders()` gate) and each provider's configured
+ * `ENTERPRISE_LICENSE_KEY || ENTERPRISE_BYPASS` and each provider's configured
  * credentials. Google/GitHub use Better Auth's built-in social providers; Azure/OIDC/SAML register
  * through the `genericOAuth` plugin (Azure keeps providerId "azuread" so existing `account.provider`
  * rows need no remap — design doc D6).
@@ -78,7 +80,7 @@ const ssoSyncProfileOnSignIn = true;
  * one. Tracking the default makes every self-hoster re-register a redirect URI on each such upstream
  * change, so `redirectURI` below holds the v5.2 URL their IdPs already have. See ssoLegacyRedirectUri.
  */
-export const ssoSocialProviders = ENTERPRISE_LICENSE_KEY
+export const ssoSocialProviders = ssoEnabled
   ? {
       ...(GITHUB_OAUTH_ENABLED
         ? {
@@ -352,12 +354,7 @@ const azureAuthority = isAzureTemplateIssuerTenant ? azureTenant.toLowerCase() :
 // The wording deliberately avoids "treating it like unset": an operator who set `organizations` would
 // read that as having lost their work/school-only restriction, which still applies at the authorize
 // endpoint. Only id_token verification is given up.
-if (
-  ENTERPRISE_LICENSE_KEY &&
-  AZURE_OAUTH_ENABLED &&
-  AZUREAD_TENANT_ID?.trim() &&
-  isAzureTemplateIssuerTenant
-) {
+if (ssoEnabled && AZURE_OAUTH_ENABLED && AZUREAD_TENANT_ID?.trim() && isAzureTemplateIssuerTenant) {
   logger.warn(
     `AZUREAD_TENANT_ID="${azureTenant}" names a Microsoft multi-tenant authority whose discovery document advertises a placeholder issuer, so id_tokens cannot be verified against it. Skipping discovery for this provider and taking identity from the userinfo endpoint; the authority you configured still applies at sign-in. Set a Directory (tenant) ID for full id_token verification.`
   );
@@ -382,7 +379,7 @@ const azureEndpoints = isAzureTemplateIssuerTenant
  * `AZUREAD_*` provider, which maps Entra's profile properly.
  */
 const oidcTemplateIssuerAuthority = microsoftTemplateIssuerAuthority(OIDC_ISSUER);
-if (ENTERPRISE_LICENSE_KEY && OIDC_OAUTH_ENABLED && oidcTemplateIssuerAuthority) {
+if (ssoEnabled && OIDC_OAUTH_ENABLED && oidcTemplateIssuerAuthority) {
   logger.warn(
     `OIDC_ISSUER points at Microsoft's "${oidcTemplateIssuerAuthority}" authority, whose discovery document advertises a placeholder issuer, so id_tokens cannot be verified against it. Skipping discovery for this provider and taking identity from the userinfo endpoint; the authority you configured still applies at sign-in. Prefer the dedicated AZUREAD_CLIENT_ID / AZUREAD_CLIENT_SECRET provider for Microsoft Entra ID.`
   );
@@ -407,7 +404,7 @@ const oidcEndpoints = oidcTemplateIssuerAuthority
  * authoritative all the way into `createUser` — and into the sign-in upgrade path, which flips an
  * existing unverified row to verified when the IdP later attests the address.
  */
-export const ssoGenericOAuthConfig: GenericOAuthConfig[] = ENTERPRISE_LICENSE_KEY
+export const ssoGenericOAuthConfig: GenericOAuthConfig[] = ssoEnabled
   ? [
       ...(AZURE_OAUTH_ENABLED
         ? [

@@ -33,6 +33,7 @@ RUN chmod +x /tmp/read-secrets.sh
 # Increase Node.js memory limit as a regular build argument
 ARG NODE_OPTIONS="--max_old_space_size=8192"
 ENV NODE_OPTIONS=${NODE_OPTIONS}
+ENV NEXT_TELEMETRY_DISABLED="1"
 
 # Target architecture - automatically provided by Docker in multi-platform builds
 # but needs explicit declaration for some build systems (like Depot)
@@ -52,6 +53,12 @@ WORKDIR /app
 
 # Prepare the build
 COPY . .
+
+# Mirror upstream CI version stamping for local source builds.
+ARG RELEASE_VERSION=""
+RUN if [ -n "$RELEASE_VERSION" ]; then \
+      RELEASE_VERSION="$RELEASE_VERSION" node -e 'const fs = require("fs"); for (const p of ["package.json", "apps/web/package.json"]) { const d = JSON.parse(fs.readFileSync(p)); d.version = process.env.RELEASE_VERSION; fs.writeFileSync(p, JSON.stringify(d, null, 2) + "\n"); }'; \
+    fi
 
 # Create a .env file
 RUN touch apps/web/.env

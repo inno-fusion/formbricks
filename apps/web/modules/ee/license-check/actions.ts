@@ -4,7 +4,7 @@ import { z } from "zod";
 import { ZId } from "@formbricks/types/common";
 import { OperationNotAllowedError, ResourceNotFoundError } from "@formbricks/types/errors";
 import { cache } from "@/lib/cache";
-import { IS_FORMBRICKS_CLOUD } from "@/lib/constants";
+import { ENTERPRISE_BYPASS, IS_FORMBRICKS_CLOUD } from "@/lib/constants";
 import { getOrganization } from "@/lib/organization/service";
 import { authenticatedActionClient } from "@/lib/utils/action-client";
 import { AuthenticatedActionClientCtx } from "@/lib/utils/action-client/types/context";
@@ -54,6 +54,10 @@ export const recheckLicenseAction = authenticatedActionClient
       }
 
       await assertCanRecheckLicense(ctx.user.id, organization.id);
+
+      if (ENTERPRISE_BYPASS) {
+        return { active: true, status: "active" as const };
+      }
 
       // Clear main license cache (preserves previous result cache for grace period)
       // This prevents instant downgrade if the license server is temporarily unreachable

@@ -12,7 +12,14 @@ import { TResponse } from "@formbricks/types/responses";
 import { TSurveyElementTypeEnum } from "@formbricks/types/surveys/elements";
 import { TSurvey } from "@formbricks/types/surveys/types";
 import { TUserLocale } from "@formbricks/types/user";
-import { DEFAULT_LOCALE, IMPRINT_ADDRESS, IMPRINT_URL, PRIVACY_URL, TERMS_URL } from "@/lib/constants";
+import {
+  DEFAULT_LOCALE,
+  IMPRINT_ADDRESS,
+  IMPRINT_URL,
+  PRIVACY_URL,
+  TERMS_URL,
+  WEBAPP_URL,
+} from "@/lib/constants";
 import { getElementResponseMapping } from "@/lib/responses";
 import { buildServerEmbeddedValues } from "@/lib/surveyLogic/utils";
 import { parseRecallInfo } from "@/lib/utils/recall";
@@ -177,6 +184,7 @@ export const buildSurveyResponseEmailHtml = async ({
     // resolve — it has no origin to resolve against, so the `<img>` renders broken. Resolve it to an
     // absolute URL here, exactly like every other email sender does (see `@/modules/email`).
     logoUrl: logoUrl ? resolveStorageUrl(logoUrl) : undefined,
+    webappUrl: WEBAPP_URL,
     t,
     privacyUrl: PRIVACY_URL || undefined,
     termsUrl: TERMS_URL || undefined,
